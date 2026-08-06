@@ -859,7 +859,7 @@ function Dashboard() {
                   <span className="font-mono text-[#aeb1c1]">{v.share}%</span>
                 </div>
                 <div className="mt-2 h-1.5 rounded-full bg-[#3d4260]">
-                  <div className={`h-full rounded-full ${i === 0 ? 'bg-[#f26b5b]' : i === 1 ? 'bg-[#f8e5a7]' : 'bg-[#65b7a9]'}`} style={{ width: `${v.share * 2.2}%` }} />
+                  <div className={`h-full rounded-full ${i === 0 ? 'bg-[#f26b5b]' : i === 1 ? 'bg-[#f8e5a7]' : 'bg-[#65b7a9]'}`} style={{ width: `${Math.min(100, Math.max(10, Number(v.share) || 25))}%` }} />
                 </div>
               </div>
             ))}
@@ -1164,20 +1164,40 @@ function TicketDetail() {
               <Sparkles size={14} />{copilot.isPending ? 'Reading context...' : 'Generate next step'}
             </button>
             {copilot.data && (
-              <div className="mt-5 border-t border-[#424764] pt-4">
-                {copilot.data.suggestedReplies?.map((r: R) => (
-                  <div key={r.tone} className="mb-2 rounded-lg bg-[#282d4a] p-3 text-xs">
-                    <b className="block text-[9px] uppercase text-[#f26b5b]">{r.tone}</b>
-                    {r.replyText}
+              <div className="mt-5 space-y-3 border-t border-[#424764] pt-4">
+                {copilot.data.summary && (
+                  <div className="rounded-lg bg-[#282d4a] p-3 text-xs">
+                    <b className="block text-[9px] uppercase tracking-wider text-[#f8e5a7]">AI Summary</b>
+                    <p className="mt-1 leading-relaxed text-[#d0d3e5]">{copilot.data.summary}</p>
+                  </div>
+                )}
+                
+                {copilot.data.nextAction && (
+                  <div className="rounded-lg bg-[#282d4a] p-3 text-xs">
+                    <b className="block text-[9px] uppercase tracking-wider text-[#65b7a9]">Recommended Action</b>
+                    <p className="mt-1 leading-relaxed text-[#d0d3e5]">{copilot.data.nextAction}</p>
+                  </div>
+                )}
+
+                {(copilot.data.suggestedReply || copilot.data.suggestedReplies) && (
+                  <div className="rounded-lg border border-[#f26b5b]/40 bg-[#282d4a] p-3 text-xs">
+                    <b className="block text-[9px] uppercase tracking-wider text-[#f26b5b]">Suggested Reply ({tone})</b>
+                    <p className="mt-1 leading-relaxed text-[#f7f7f3]">
+                      {copilot.data.suggestedReply || copilot.data.suggestedReplies?.[0]?.replyText}
+                    </p>
                     <button
                       type="button"
-                      onClick={() => setReplyText(r.replyText)}
-                      className="mt-2 block text-[10px] font-bold text-[#f8e5a7] underline"
+                      onClick={() => {
+                        const reply = copilot.data.suggestedReply || copilot.data.suggestedReplies?.[0]?.replyText || '';
+                        setReplyText(reply);
+                        toast({ title: "Draft inserted into composer", description: "You can now review or edit the reply before sending." });
+                      }}
+                      className="mt-3 inline-flex items-center gap-1.5 font-mono text-[11px] font-bold text-[#f8e5a7] hover:underline"
                     >
-                      Use draft in composer
+                      Use draft in composer <ArrowRight size={12} />
                     </button>
                   </div>
-                ))}
+                )}
               </div>
             )}
           </div>
