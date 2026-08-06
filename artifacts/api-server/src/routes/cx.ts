@@ -423,17 +423,15 @@ router.post("/cx/copilot", staff, copilotLimiter, async (req, res): Promise<void
       `Ticket: "${subject}"\nContext: ${context}\nTone: ${tone}\nProvide JSON: { summary: string, suggestedReply: string, nextAction: string }`,
     );
     res.json({
-      summary: data.summary,
-      suggestedReply: data.suggestedReply,
-      nextAction: data.nextAction,
+      handoverNotes: data.summary,
+      recommendedNextActions: [data.nextAction],
       suggestedReplies: [{ tone, replyText: data.suggestedReply }],
     });
   } catch {
     const fallbackReply = `Thank you for reaching out regarding "${subject}". Our team is reviewing the issue logs and will follow up shortly with a complete resolution.`;
     res.json({
-      summary: desc,
-      suggestedReply: fallbackReply,
-      nextAction: "Review ticket context, check system logs, and respond to customer.",
+      handoverNotes: desc,
+      recommendedNextActions: ["Review ticket context, check system logs, and respond to customer."],
       suggestedReplies: [{ tone: tone || "Warm & concise", replyText: fallbackReply }],
     });
   }
