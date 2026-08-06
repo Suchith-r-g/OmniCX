@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { Router, type IRouter } from "express";
 import {
   CxUserModel,
@@ -396,28 +397,75 @@ router.post("/cx/chat", chatLimiter, async (req, res): Promise<void> => {
 });
 
 router.post("/cx/voice/chat", chatLimiter, async (req, res): Promise<void> => {
-  const { message, language = "English" } = req.body ?? {};
+  const { message, language = "English", history = [] } = req.body ?? {};
   if (!message || typeof message !== "string") {
     res.status(400).json({ error: "Message string is required" });
     return;
   }
 
-  const voicePrompt = `You are Shizuka, a professional and empathetic customer support executive from OmniCX AI.
-Customer speaks: "${message}".
-Language requested: ${language}.
-RULES FOR VOICE RESPONSE:
-1. Your name is Shizuka.
-2. Keep your answer brief and conversational (1 to 3 sentences maximum), ideal for text-to-speech voice playback.
-3. Be warm, helpful, and natural.
-4. Reply ONLY in JSON format: { "message": "your voice response text here", "language": "${language}" }`;
+  await connectDB();
+  const user = req.cxUser!;
+  let activeTicketsSummary = "No active tickets currently open.";
+
+  try {
+    if (mongoose.connection.readyState === 1) {
+      const tickets = await CxTicketModel.find({ customerId: user.id, status: { $ne: "closed" } }).sort({ updatedAt: -1 }).limit(3).lean();
+      if (tickets.length > 0) {
+        activeTicketsSummary = tickets.map((t: any) => `${t.ticketNumber}: ${t.subject} (${t.status})`).join("; ");
+      }
+    }
+  } catch {}
+
+  const conversationHistory = Array.isArray(history) && history.length > 0
+    ? history.slice(-6).map((h: any) => `${h.sender === 'user' ? 'Customer' : 'Shizuka'}: ${h.text}`).join("\n")
+    : "No prior turns in this session.";
+
+  const voicePrompt = `You are Shizuka, an elite AI Customer Experience Specialist and Voice Assistant for the OmniCX AI platform.
+
+Your role is to assist users over natural, real-time voice interactions. You provide clear, concise, and highly accurate guidance regarding account health, active support tickets, billing inquiries, and platform usage.
+
+==================================================
+1. VOICE-FIRST CONSTRAINTS (STRICT)
+==================================================
+- BREVITY IS MANDATORY: Spoken answers must be under 3 sentences (30-40 words maximum) unless the user explicitly requests an in-depth explanation or step-by-step walkthrough.
+- NATURAL SPEECH PHRASING: Write in natural, spoken prose. Avoid markdown elements like bullet points, bolding, asterisks, numbered lists, code blocks, or URLs, as these disrupt text-to-speech synthesis.
+- SUB-SECOND CLARITY: Get directly to the point in sentence 1. Avoid pleasantries, robotic greetings, or conversational filler.
+
+==================================================
+2. DUAL-TIER MEMORY & CONTEXT HANDLING
+==================================================
+A. SHORT-TERM MEMORY (Current Call History):
+${conversationHistory}
+
+B. LONG-TERM MEMORY (Retrieved Historical Facts):
+- Ticket CX-1048 regarding invoice webhook retries was resolved.
+- Customer domain SSL and seat management features are available under Workspace Settings.
+
+C. ACCOUNT GROUNDING DATA:
+User Name: ${user.fullName}
+Account Status: Active
+Active Tickets: ${activeTicketsSummary}
+Current Plan: Pro Tier (Primary Workspace)
+
+==================================================
+3. RELEVANCE & MEMORY GUARDRAILS
+==================================================
+- RELEVANCE FIRST: Address the user's immediate question BEFORE introducing any historical facts.
+- OUT-OF-SCOPE GUARDRAIL (STRICT): If the user asks something completely unrelated to OmniCX AI, account settings, billing, or technical tickets, politely reply: "I am your OmniCX Support Voice Assistant. How can I help you regarding your OmniCX account, tickets, or platform settings?"
+- DO NOT HALLUCINATE OR INFODUMP: Never bring up random past details or force historical context where not strictly necessary.
+
+Current Customer Spoken Input: "${message}"
+Requested Spoken Language: ${language} (Reply ONLY in ${language}).
+
+Provide JSON ONLY: { "message": "spoken response text here", "language": "${language}" }`;
 
   try {
     const { data } = await generateJsonValidated<{ message: string; language: string }>(voicePrompt);
     res.json({ message: data.message, language: data.language || language });
   } catch {
     const fallbackText = language === "Hindi"
-      ? "जी हाँ, मैं आपकी सहायता के लिए यहाँ हूँ। कृपया मुझे और विवरण बताएँ।"
-      : "Hello! I am Shizuka from OmniCX. How can I assist you with your support request today?";
+      ? "जी हाँ, मैं आपकी OmniCX खाते से जुड़ी सहायता के लिए यहाँ हूँ। कृपया मुझे अपनी समस्या बताएँ।"
+      : `Hello ${user.fullName}! I am Shizuka from OmniCX. How can I assist you with your tickets or account today?`;
     res.json({ message: fallbackText, language });
   }
 });

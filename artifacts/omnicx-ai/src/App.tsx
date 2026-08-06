@@ -674,7 +674,7 @@ function VoiceCallModal({ onClose, customerName }: { onClose: () => void; custom
       const res = await fetch('/api/cx/voice/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: userText, language }),
+        body: JSON.stringify({ message: userText, language, history: transcript }),
       });
       const data = await res.json();
       const aiReply = data.message || "I'm here to help. Could you tell me a bit more?";
@@ -736,10 +736,7 @@ function VoiceCallModal({ onClose, customerName }: { onClose: () => void; custom
   };
 
   useEffect(() => {
-    const initialGreeting = language === 'Hindi'
-      ? `नमस्ते! मैं शिजुका हूँ, OmniCX से। मैं आपकी क्या मदद कर सकती हूँ?`
-      : `Hello ${customerName === 'there' ? '' : customerName}! I am Shizuka, your OmniCX Voice Assistant. How can I help you today?`;
-    
+    const initialGreeting = `Hello ${customerName === 'there' ? '' : customerName}! I am Shizuka, your OmniCX Voice Assistant. How can I help you today?`;
     setTranscript([{ sender: 'agent', text: initialGreeting }]);
     setTimeout(() => {
       speakText(initialGreeting);
@@ -749,7 +746,7 @@ function VoiceCallModal({ onClose, customerName }: { onClose: () => void; custom
       if ('speechSynthesis' in window) window.speechSynthesis.cancel();
       if (recognitionRef.current) recognitionRef.current.abort();
     };
-  }, [language]);
+  }, []);
 
   const handleEndCall = () => {
     if ('speechSynthesis' in window) window.speechSynthesis.cancel();
@@ -766,6 +763,16 @@ function VoiceCallModal({ onClose, customerName }: { onClose: () => void; custom
       startListening();
     }
     setIsMuted(!isMuted);
+  };
+
+  const handleLanguageToggle = () => {
+    const nextLang = language === 'English' ? 'Hindi' : 'English';
+    setLanguage(nextLang);
+    const notice = nextLang === 'Hindi'
+      ? 'भाषा बदलकर हिंदी कर दी गई है।'
+      : 'Switched language to English.';
+    setStatusText(`Language: ${nextLang}`);
+    speakText(notice);
   };
 
   return (
@@ -841,7 +848,7 @@ function VoiceCallModal({ onClose, customerName }: { onClose: () => void; custom
 
           <button
             type="button"
-            onClick={() => setLanguage(language === 'English' ? 'Hindi' : 'English')}
+            onClick={handleLanguageToggle}
             className="flex h-12 items-center gap-2 rounded-2xl bg-[#2a2f4e] px-4 text-xs font-bold text-[#f8e5a7] hover:bg-[#343a5f]"
             title="Switch Language"
           >
