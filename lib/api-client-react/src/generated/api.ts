@@ -27,8 +27,13 @@ import type {
   CxCustomer,
   CxCustomer360,
   CxDashboard,
+  CxFeedbackInput,
+  CxFeedbackResponse,
   CxInsights,
+  CxMessage,
+  CxMessageInput,
   CxTicket,
+  CxTicketAssignInput,
   CxTicketDetail,
   CxTicketInput,
   CxTicketStatusInput,
@@ -512,6 +517,221 @@ export const useUpdateCxTicketStatus = <TError = ErrorType<unknown>,
         TContext
       > => {
       return useMutation(getUpdateCxTicketStatusMutationOptions(options));
+    }
+
+export const getCreateCxTicketMessageUrl = (id: string,) => {
+
+
+
+
+  return `/api/cx/tickets/${id}/messages`
+}
+
+/**
+ * @summary Add a message or internal note to a ticket
+ */
+export const createCxTicketMessage = async (id: string,
+    cxMessageInput: CxMessageInput, options?: Parameters<typeof customFetch>[1]): Promise<CxMessage> => {
+
+  return customFetch<CxMessage>(getCreateCxTicketMessageUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(cxMessageInput)
+  }
+);}
+
+
+
+
+
+export const getCreateCxTicketMessageMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createCxTicketMessage>>, TError,{id: string;data: BodyType<CxMessageInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createCxTicketMessage>>, TError,{id: string;data: BodyType<CxMessageInput>}, TContext> => {
+
+const mutationKey = ['createCxTicketMessage'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createCxTicketMessage>>, {id: string;data: BodyType<CxMessageInput>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  createCxTicketMessage(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateCxTicketMessageMutationResult = NonNullable<Awaited<ReturnType<typeof createCxTicketMessage>>>
+    export type CreateCxTicketMessageMutationBody = BodyType<CxMessageInput>
+    export type CreateCxTicketMessageMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Add a message or internal note to a ticket
+ */
+export const useCreateCxTicketMessage = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createCxTicketMessage>>, TError,{id: string;data: BodyType<CxMessageInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createCxTicketMessage>>,
+        TError,
+        {id: string;data: BodyType<CxMessageInput>},
+        TContext
+      > => {
+      return useMutation(getCreateCxTicketMessageMutationOptions(options));
+    }
+
+export const getAssignCxTicketUrl = (id: string,) => {
+
+
+
+
+  return `/api/cx/tickets/${id}/assign`
+}
+
+/**
+ * @summary Assign ticket to an agent
+ */
+export const assignCxTicket = async (id: string,
+    cxTicketAssignInput: CxTicketAssignInput, options?: Parameters<typeof customFetch>[1]): Promise<CxTicket> => {
+
+  return customFetch<CxTicket>(getAssignCxTicketUrl(id),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(cxTicketAssignInput)
+  }
+);}
+
+
+
+
+
+export const getAssignCxTicketMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof assignCxTicket>>, TError,{id: string;data: BodyType<CxTicketAssignInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof assignCxTicket>>, TError,{id: string;data: BodyType<CxTicketAssignInput>}, TContext> => {
+
+const mutationKey = ['assignCxTicket'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof assignCxTicket>>, {id: string;data: BodyType<CxTicketAssignInput>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  assignCxTicket(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AssignCxTicketMutationResult = NonNullable<Awaited<ReturnType<typeof assignCxTicket>>>
+    export type AssignCxTicketMutationBody = BodyType<CxTicketAssignInput>
+    export type AssignCxTicketMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Assign ticket to an agent
+ */
+export const useAssignCxTicket = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof assignCxTicket>>, TError,{id: string;data: BodyType<CxTicketAssignInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof assignCxTicket>>,
+        TError,
+        {id: string;data: BodyType<CxTicketAssignInput>},
+        TContext
+      > => {
+      return useMutation(getAssignCxTicketMutationOptions(options));
+    }
+
+export const getCreateCxFeedbackUrl = () => {
+
+
+
+
+  return `/api/cx/feedback`
+}
+
+/**
+ * @summary Submit customer feedback
+ */
+export const createCxFeedback = async (cxFeedbackInput: CxFeedbackInput, options?: Parameters<typeof customFetch>[1]): Promise<CxFeedbackResponse> => {
+
+  return customFetch<CxFeedbackResponse>(getCreateCxFeedbackUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(cxFeedbackInput)
+  }
+);}
+
+
+
+
+
+export const getCreateCxFeedbackMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createCxFeedback>>, TError,{data: BodyType<CxFeedbackInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createCxFeedback>>, TError,{data: BodyType<CxFeedbackInput>}, TContext> => {
+
+const mutationKey = ['createCxFeedback'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createCxFeedback>>, {data: BodyType<CxFeedbackInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createCxFeedback(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateCxFeedbackMutationResult = NonNullable<Awaited<ReturnType<typeof createCxFeedback>>>
+    export type CreateCxFeedbackMutationBody = BodyType<CxFeedbackInput>
+    export type CreateCxFeedbackMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Submit customer feedback
+ */
+export const useCreateCxFeedback = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createCxFeedback>>, TError,{data: BodyType<CxFeedbackInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createCxFeedback>>,
+        TError,
+        {data: BodyType<CxFeedbackInput>},
+        TContext
+      > => {
+      return useMutation(getCreateCxFeedbackMutationOptions(options));
     }
 
 export const getListCxCustomersUrl = () => {

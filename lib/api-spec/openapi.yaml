@@ -103,6 +103,64 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/CxTicket"
+  /cx/tickets/{id}/messages:
+    post:
+      operationId: createCxTicketMessage
+      tags: [cx]
+      summary: Add a message or internal note to a ticket
+      parameters:
+        - $ref: "#/components/parameters/CxId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CxMessageInput"
+      responses:
+        "201":
+          description: Created message
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CxMessage"
+  /cx/tickets/{id}/assign:
+    patch:
+      operationId: assignCxTicket
+      tags: [cx]
+      summary: Assign ticket to an agent
+      parameters:
+        - $ref: "#/components/parameters/CxId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CxTicketAssignInput"
+      responses:
+        "200":
+          description: Assigned ticket
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CxTicket"
+  /cx/feedback:
+    post:
+      operationId: createCxFeedback
+      tags: [cx]
+      summary: Submit customer feedback
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CxFeedbackInput"
+      responses:
+        "201":
+          description: Feedback recorded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CxFeedbackResponse"
   /cx/customers:
     get:
       operationId: listCxCustomers
@@ -397,4 +455,29 @@ components:
         recommendedNextActions:
           type: array
           items: { type: string }
+    CxMessageInput:
+      type: object
+      required: [message]
+      properties:
+        message: { type: string, minLength: 1 }
+        isInternalNote: { type: boolean }
+    CxTicketAssignInput:
+      type: object
+      required: [assignedAgentId]
+      properties:
+        assignedAgentId: { type: string }
+    CxFeedbackInput:
+      type: object
+      required: [csatRating]
+      properties:
+        ticketId: { type: string }
+        csatRating: { type: string }
+        npsScore: { type: string }
+        qualitativeFeedback: { type: string }
+    CxFeedbackResponse:
+      type: object
+      required: [id, success]
+      properties:
+        id: { type: string }
+        success: { type: boolean }
 

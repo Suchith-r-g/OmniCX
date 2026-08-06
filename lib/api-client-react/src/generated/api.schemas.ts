@@ -154,3 +154,25 @@ export interface CxCopilotInput {
   tone: string;
 }
 
+export interface CxMessageInput {
+  /** @minLength 1 */
+  message: string;
+  isInternalNote?: boolean;
+}
+
+export interface CxTicketAssignInput {
+  assignedAgentId: string;
+}
+
+export interface CxFeedbackInput {
+  ticketId?: string;
+  csatRating: string;
+  npsScore?: string;
+  qualitativeFeedback?: string;
+}
+
+export interface CxFeedbackResponse {
+  id: string;
+  success: boolean;
+}
+

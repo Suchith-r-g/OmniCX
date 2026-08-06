@@ -178,6 +178,75 @@ export const UpdateCxTicketStatusResponse = zod.object({
 
 
 /**
+ * @summary Add a message or internal note to a ticket
+ */
+export const CreateCxTicketMessageParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+
+
+
+export const CreateCxTicketMessageBody = zod.object({
+  "message": zod.string().min(1),
+  "isInternalNote": zod.boolean().optional()
+})
+
+export const CreateCxTicketMessageResponse = zod.object({
+  "id": zod.string(),
+  "sender": zod.string(),
+  "senderType": zod.string().optional(),
+  "text": zod.string(),
+  "time": zod.string(),
+  "sentiment": zod.string().optional()
+})
+
+
+/**
+ * @summary Assign ticket to an agent
+ */
+export const AssignCxTicketParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const AssignCxTicketBody = zod.object({
+  "assignedAgentId": zod.string()
+})
+
+export const AssignCxTicketResponse = zod.object({
+  "id": zod.string(),
+  "number": zod.string(),
+  "subject": zod.string(),
+  "customer": zod.string(),
+  "customerId": zod.string().optional(),
+  "status": zod.string(),
+  "priority": zod.string(),
+  "sentiment": zod.string(),
+  "category": zod.string(),
+  "channel": zod.string().optional(),
+  "updatedAt": zod.string(),
+  "sla": zod.string(),
+  "summary": zod.string().optional()
+})
+
+
+/**
+ * @summary Submit customer feedback
+ */
+export const CreateCxFeedbackBody = zod.object({
+  "ticketId": zod.string().optional(),
+  "csatRating": zod.string(),
+  "npsScore": zod.string().optional(),
+  "qualitativeFeedback": zod.string().optional()
+})
+
+export const CreateCxFeedbackResponse = zod.object({
+  "id": zod.string(),
+  "success": zod.boolean()
+})
+
+
+/**
  * @summary List customer 360 records
  */
 export const ListCxCustomersResponseItem = zod.object({

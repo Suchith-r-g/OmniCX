@@ -1,3 +1,12 @@
+import { config as loadEnv } from "dotenv";
+import { resolve, dirname } from "path";
+import { fileURLToPath } from "url";
+
+// Load .env from this package directory first, then fall back to workspace root
+const __dir = dirname(fileURLToPath(import.meta.url));
+loadEnv({ path: resolve(__dir, "../.env"), override: false });
+loadEnv({ path: resolve(__dir, "../../.env"), override: false });
+
 import app from "./app";
 import { logger } from "./lib/logger";
 
