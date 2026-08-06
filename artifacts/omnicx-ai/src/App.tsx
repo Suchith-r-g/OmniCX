@@ -608,7 +608,7 @@ function VoiceCallModal({ onClose, customerName }: { onClose: () => void; custom
   const [duration, setDuration] = useState(0);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isListening, setIsListening] = useState(false);
-  const [statusText, setStatusText] = useState('Connecting to Varsha...');
+  const [statusText, setStatusText] = useState('Connecting to Shizuka...');
   const [transcript, setTranscript] = useState<{ sender: 'user' | 'agent'; text: string }[]>([]);
   const [currentText, setCurrentText] = useState('');
   
@@ -646,7 +646,7 @@ function VoiceCallModal({ onClose, customerName }: { onClose: () => void; custom
 
     utterance.onstart = () => {
       setIsSpeaking(true);
-      setStatusText('Varsha is speaking...');
+      setStatusText('Shizuka is speaking...');
     };
 
     utterance.onend = () => {
@@ -667,7 +667,7 @@ function VoiceCallModal({ onClose, customerName }: { onClose: () => void; custom
   const handleUserSpeech = async (userText: string) => {
     if (!userText.trim()) return;
     setTranscript((prev) => [...prev, { sender: 'user', text: userText }]);
-    setStatusText('Varsha is thinking...');
+    setStatusText('Shizuka is thinking...');
     setIsListening(false);
 
     try {
@@ -737,8 +737,8 @@ function VoiceCallModal({ onClose, customerName }: { onClose: () => void; custom
 
   useEffect(() => {
     const initialGreeting = language === 'Hindi'
-      ? `नमस्ते! मैं वर्षा हूँ, OmniCX से। मैं आपकी क्या मदद कर सकती हूँ?`
-      : `Hello ${customerName === 'there' ? '' : customerName}! I am Varsha, your OmniCX Voice Assistant. How can I help you today?`;
+      ? `नमस्ते! मैं शिजुका हूँ, OmniCX से। मैं आपकी क्या मदद कर सकती हूँ?`
+      : `Hello ${customerName === 'there' ? '' : customerName}! I am Shizuka, your OmniCX Voice Assistant. How can I help you today?`;
     
     setTranscript([{ sender: 'agent', text: initialGreeting }]);
     setTimeout(() => {
@@ -778,7 +778,7 @@ function VoiceCallModal({ onClose, customerName }: { onClose: () => void; custom
               <span className="relative inline-flex h-3 w-3 rounded-full bg-[#f26b5b]"></span>
             </span>
             <div>
-              <div className="font-display text-sm font-bold">Varsha — Voice Agent</div>
+              <div className="font-display text-sm font-bold">Shizuka — Voice Agent</div>
               <div className="font-mono text-[10px] text-[#a1a5c1]">OmniCX AI Support</div>
             </div>
           </div>
@@ -815,7 +815,7 @@ function VoiceCallModal({ onClose, customerName }: { onClose: () => void; custom
         <div className="mx-6 mb-6 max-h-44 space-y-3 overflow-y-auto rounded-2xl bg-[#171a30] p-4 text-xs">
           {transcript.map((t, idx) => (
             <div key={idx} className={`flex gap-2 ${t.sender === 'user' ? 'text-[#65b7a9]' : 'text-[#f7f7f3]'}`}>
-              <b className="shrink-0">{t.sender === 'user' ? 'You:' : 'Varsha:'}</b>
+              <b className="shrink-0">{t.sender === 'user' ? 'You:' : 'Shizuka:'}</b>
               <span>{t.text}</span>
             </div>
           ))}

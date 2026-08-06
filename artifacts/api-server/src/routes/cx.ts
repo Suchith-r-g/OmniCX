@@ -402,11 +402,11 @@ router.post("/cx/voice/chat", chatLimiter, async (req, res): Promise<void> => {
     return;
   }
 
-  const voicePrompt = `You are Varsha, a professional and empathetic customer support executive from OmniCX AI.
+  const voicePrompt = `You are Shizuka, a professional and empathetic customer support executive from OmniCX AI.
 Customer speaks: "${message}".
 Language requested: ${language}.
 RULES FOR VOICE RESPONSE:
-1. Your name is Varsha.
+1. Your name is Shizuka.
 2. Keep your answer brief and conversational (1 to 3 sentences maximum), ideal for text-to-speech voice playback.
 3. Be warm, helpful, and natural.
 4. Reply ONLY in JSON format: { "message": "your voice response text here", "language": "${language}" }`;
@@ -417,7 +417,7 @@ RULES FOR VOICE RESPONSE:
   } catch {
     const fallbackText = language === "Hindi"
       ? "जी हाँ, मैं आपकी सहायता के लिए यहाँ हूँ। कृपया मुझे और विवरण बताएँ।"
-      : "Hello! I am Varsha from OmniCX. How can I assist you with your support request today?";
+      : "Hello! I am Shizuka from OmniCX. How can I assist you with your support request today?";
     res.json({ message: fallbackText, language });
   }
 });
