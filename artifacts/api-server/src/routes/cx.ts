@@ -24,6 +24,7 @@ import {
   UpdateCxTicketStatusParams,
 } from "@workspace/api-zod";
 import { generateJson } from "../lib/ai";
+import { logger } from "../lib/logger";
 import { requireCxRole } from "../middlewares/cxAuth";
 
 const router: IRouter = Router();
@@ -92,12 +93,58 @@ async function getTicket(id: string, user: UserRow): Promise<{ ticket: TicketRow
   return result ? { ticket: result.ticket, customer: result.customer ?? undefined } : null;
 }
 
-async function aiJson<T>(prompt: string, fallback: T): Promise<T> {
+async function aiJson<T>(prompt: string, fallback: T, feature: string): Promise<T> {
   try {
     return await generateJson<T>(prompt);
-  } catch {
+  } catch (error) {
+    logger.warn(
+      { feature, err: error instanceof Error ? error.message : String(error) },
+      "Using CX AI fallback response",
+    );
     return fallback;
   }
+}
+
+function chatFallback(message: string) {
+  const normalized = message.toLowerCase();
+
+  if (/(refund|charge|billing|invoice|payment|price|subscription)/.test(normalized)) {
+    return {
+      message: "I can help with billing questions. Tell me whether you need to understand a charge, update your plan, or request a refund, and I’ll point you to the right next step.",
+      intent: "billing",
+      suggestedActions: ["Review billing details", "Ask about a refund", "Talk to an agent"],
+    };
+  }
+
+  if (/(password|login|sign in|signin|access|account)/.test(normalized)) {
+    return {
+      message: "For account access, first try the password reset option on the sign-in screen. If you’re still blocked, share the exact step where it fails and I’ll help narrow it down.",
+      intent: "account_access",
+      suggestedActions: ["Reset my password", "Troubleshoot sign-in", "Talk to an agent"],
+    };
+  }
+
+  if (/(ship|shipping|delivery|deliver|order|tracking)/.test(normalized)) {
+    return {
+      message: "I can help track an order or clarify delivery timing. Share the order number if you have it, or tell me what delivery update you expected.",
+      intent: "order_delivery",
+      suggestedActions: ["Find an order", "Check delivery status", "Talk to an agent"],
+    };
+  }
+
+  if (/(ticket|case|support request|issue|problem|bug|broken)/.test(normalized)) {
+    return {
+      message: `I understand you need help with: “${message}”. I can help you open a support ticket, or you can share what happened and what outcome you want so we can capture the right details.`,
+      intent: "support_request",
+      suggestedActions: ["Open a ticket", "Add more details", "Talk to an agent"],
+    };
+  }
+
+  return {
+    message: `Thanks for reaching out about “${message}”. I’m ready to help. Add a little more context—what are you trying to do, and what happened instead?`,
+    intent: "general_support",
+    suggestedActions: ["Open a ticket", "Add more details", "Talk to an agent"],
+  };
 }
 
 router.get("/cx/dashboard", staff, async (req, res): Promise<void> => {
@@ -331,14 +378,11 @@ router.post("/cx/chat", async (req, res): Promise<void> => {
     .where(eq(cxTicketsTable.customerId, user.id))
     .orderBy(desc(cxTicketsTable.updatedAt))
     .limit(10);
-  const fallback = {
-    message: "I couldn't reach the assistant service. You can still open a ticket and a human will follow up.",
-    intent: "general_support",
-    suggestedActions: ["Open a ticket", "Talk to an agent"],
-  };
+  const fallback = chatFallback(parsed.data.message);
   const reply = await aiJson<typeof fallback>(
     `You are OmniCX customer support assistant. Return only JSON with message, intent, and suggestedActions (string array). Never claim you completed an action. User: ${user.fullName}. Their tickets: ${JSON.stringify(ownTickets)}. Message: ${parsed.data.message}`,
     fallback,
+    "chat",
   );
   res.json(SendCxChatResponse.parse(reply));
 });
@@ -363,6 +407,7 @@ router.post("/cx/copilot", staff, async (req, res): Promise<void> => {
   const result = await aiJson<typeof fallback>(
     `You are a support agent copilot. Return only JSON with suggestedReplies (tone and replyText), handoverNotes, and recommendedNextActions. Do not invent account facts. Ticket: ${JSON.stringify(found.ticket)} Messages: ${JSON.stringify(messages)} Requested tone: ${parsed.data.tone}`,
     fallback,
+    "copilot",
   );
   res.json(result);
 });
