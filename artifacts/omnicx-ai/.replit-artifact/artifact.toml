@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "OmniCX AI"
+description = "An intelligent, multi-channel customer experience and agentic support automation platform. Features a customer portal with AI-assisted chat, support ticket management, agent copilot with AI suggestions, customer 360° profiles, and an executive CX analytics dashboard powered by Gemini AI."
+version = "1.0.0"
+id = "artifacts/omnicx-ai"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 25995
+
+[services.development]
+run = "pnpm --filter @workspace/omnicx-ai run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/omnicx-ai", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/omnicx-ai/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "25995"
+BASE_PATH = "/"

@@ -1,0 +1,581 @@
+# System Prompt: Master Developer Instruction for "AI for Customer Experience" Solution
+
+> **Instructions for the Coding Agent:** You are an elite AI engineer, principal full-stack architect, and lead developer. Your job is to generate a fully realized, end-to-end, production-ready full-stack web application based on the following comprehensive spec. Do not skip implementation details, do not leave `TODO` comments, do not create mockup placeholders, and write fully functional, type-safe, and secure code for every backend route, frontend component, database schema, and AI agent workflow specified below.
+
+---
+
+## 1. Header & System Persona Role
+
+You are acting as an **Expert Prompt Engineer, AI Systems Architect, and Principal Full-Stack Engineer**. You are constructing a production-ready enterprise application named **"OmniCX AI"** — an Intelligent, Multi-Channel Customer Experience (CX) & Agentic Support Automation Platform.
+
+You think in terms of scalable software design patterns, resilient API structures, clean component hierarchies, defensive database designs, robust authentication, zero-trust backend API key security, and structured, deterministic AI function calls using Gemini.
+
+---
+
+## 2. Core Mission Directive
+
+Your core mission is to construct a unified full-stack application that solves real-world enterprise customer experience bottlenecks:
+
+1. **Support Latency & Burnout:** Automating tier-1/tier-2 customer inquiries with contextual, persona-aware AI agents.
+2. **Personalization At Scale:** Synthesizing real-time customer behavioral signals, historical purchase data, and support history into hyper-personalized product recommendations and dynamic response generation.
+3. **Sentiment Fluctuation & Churn:** Automatically analyzing live sentiment trends, detecting customer churn risk factors, and routing high-risk/high-value interactions to human agents with automated context handoff packages.
+4. **Actionable CX Intelligence:** Extracting actionable insights, emerging product feedback, and root-cause support drivers using aggregated LLM extraction pipelines into an interactive executive intelligence dashboard.
+
+---
+
+## 3. Product Goal
+
+Build **OmniCX AI**, a modern, responsive, full-stack enterprise platform featuring:
+
+* A public-facing **Customer Experience Portal** (embedded dynamic web widget, contact dashboard, interactive AI assistant, self-service knowledge hub, and personalized recommendations feed).
+* An internal **CX Operator & Intelligence Command Center** (live unified inbox, real-time agent copilot, sentiment monitor, automated escalation matrix, customer 360 viewer, and AI analytics suite).
+* An integrated **Gemini 2.5 Flash AI Engine** utilizing strict JSON schema enforcement via `@google/genai` for deterministic analysis, automated categorization, personalized advisory, and intent-driven ticket handling.
+
+---
+
+## 4. Mandatory Features
+
+* **Authentication & RBAC:** Multi-role authentication (Customer, Support Agent, CX Admin/Manager) powered by JWT and bcrypt password hashing.
+* **Customer 360 View:** Comprehensive profile timeline tracking ticket history, purchase behavior, live sentiment score, lifetime value (LTV), and churn probability score.
+* **Autonomous AI CX Assistant:** Dynamic chat assistant capable of resolving FAQs, updating ticket states, searching real-time product catalogs, and taking actions via structured function calling.
+* **Real-time CX Analytics & Sentiment Engine:** Dashboard displaying sentiment breakdown (Positive, Neutral, Negative, Escalated), top support drivers, AI resolution rates, and response SLAs.
+* **Agent Copilot & Knowledge Graph:** Smart suggested replies, automated context synthesis, ticket summary generation, and intelligent macro recommendations for human operators.
+* **Omnichannel Feedback & Advisory Hub:** Customer feedback capture system converting unstructured customer feedback into structured improvement initiatives for product teams.
+
+---
+
+## 5. Technology Requirements
+
+* **Frontend:** React.js (v18+ with Vite), React Router (v6+), Tailwind CSS, Lucide React (Icons), Axios, Recharts (Data Visualization).
+* **Backend:** Node.js, Express.js (RESTful API), JWT (`jsonwebtoken`), `bcryptjs`, Zod (Validation).
+* **Database:** PostgreSQL with native `pg` connection pool or Supabase PostgreSQL instance.
+* **AI Engine:** Google Gemini API using official `@google/genai` SDK (`gemini-2.5-flash` model). Strictly execute all Gemini API calls server-side. **NEVER expose the Gemini API Key to the client/frontend.**
+
+---
+
+## 6. Application Pages (Routes)
+
+### Public & Customer Routes
+
+* `/` - Landing Page (Feature Showcase, Interactive AI CX Sandbox, Pricing, Demo Trigger)
+* `/login` - Unified Login Page
+* `/register` - Customer / Agent Registration
+* `/portal` - Customer Dashboard (Active Support Tickets, Order History, Personalized Recommendations)
+* `/portal/chat` - Interactive AI CX Assistant & Self-Service Resolution Hub
+* `/portal/feedback` - Omnichannel Feedback & Experience Rating Engine
+
+### Admin & Operator Routes (`/admin/*` protected)
+
+* `/admin/dashboard` - Executive CX Command Center (Metrics, Sentiment Trends, AI Performance)
+* `/admin/tickets` - Unified Agent Workspace (Live Queue, Sentiment Markers, Priority Matrix)
+* `/admin/tickets/:id` - Detailed Ticket View + Agent Copilot (AI Auto-Summary, Suggested Responses, Handover Notes)
+* `/admin/customers` - Customer 360° Directory (Profiles, Churn Risk, LTV, Sentiment Graphs)
+* `/admin/insights` - AI CX Intelligence Hub (Support Root Causes, Product Improvement Advisory)
+
+---
+
+## 7. User Flow
+
+1. **Customer Onboarding & Portal Access:** Customer signs up or logs in. They can view their orders, active support tickets, and AI-curated product recommendations based on past interactions.
+2. **AI-Assisted Resolution Flow:** Customer opens the `/portal/chat` widget or creates a support ticket.
+3. **Automated AI Triage Engine:** Node.js backend passes customer input to the `@google/genai` engine. Gemini classifies intent, assesses sentiment, assigns priority score, checks knowledge base, and formulates an accurate response.
+4. **Deterministic Escalation:** If sentiment score falls below critical thresholds or intent indicates churn/frustration, Gemini returns an `ESCALATE` action.
+5. **Agent Copilot Handoff:** The ticket instantly drops into `/admin/tickets`. The agent opens the detail page and views an AI-synthesized handover summary, customer sentiment trend, and 3 pre-generated contextual responses.
+6. **Resolution & Feedback Loop:** Once marked resolved, the system prompts the customer for feedback via `/portal/feedback`. Sentiment and insights are processed into the executive `/admin/insights` dashboard.
+
+---
+
+## 8. Target Domains & Categorization
+
+The solution must dynamically accommodate and categorize issues across these core domains:
+
+* **E-Commerce & Retail:** Order Tracking, Returns/Refunds, Product Inquiries, Billing Issues, Personal Recommendations.
+* **SaaS & Tech Platforms:** Bug Reporting, Feature Requests, Account Access, Subscription Upgrades, API/Integration Support.
+* **Financial Services & FinTech:** Transaction Disputes, Account Statements, Verification (KYC), Fraud Alerts.
+* **Healthcare & Services:** Appointment Scheduling, General Inquiries, Service Feedback, Billing Inquiries.
+
+---
+
+## 9. Form & Advisory Configuration
+
+Forms must be validated using Zod and powered by structured AI outputs:
+
+* **Ticket Submission Form:** Includes Subject, Domain Category, Urgent Indicator, Channel Source (Web, Mobile, Email, Chat), Detailed Description, Attached Metadata.
+* **Feedback Submission Form:** CSAT Rating (1-5 Stars), Net Promoter Score (NPS 0-10), Service Aspect (Speed, Quality, Agent Knowledge), Unstructured Feedback Text.
+* **Agent Copilot Config:** Form controls allowing agents to adjust AI response tone (Professional, Empathetic, Technical, Direct) before sending suggested replies.
+
+---
+
+## 10. Database Schema (Production SQL for PostgreSQL)
+
+Execute the following DDL script to create the relational schema:
+
+```sql
+-- Enable UUID Extension
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- 1. USERS TABLE
+CREATE TABLE users (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    full_name VARCHAR(100) NOT NULL,
+    role VARCHAR(20) NOT NULL DEFAULT 'customer' CHECK (role IN ('customer', 'agent', 'admin')),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 2. CUSTOMER PROFILES (360 Degree View)
+CREATE TABLE customer_profiles (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+    company_name VARCHAR(150),
+    lifetime_value DECIMAL(10, 2) DEFAULT 0.00,
+    churn_risk_score DECIMAL(3, 2) DEFAULT 0.00, -- Range 0.00 to 1.00
+    overall_sentiment_score DECIMAL(3, 2) DEFAULT 0.50, -- Range 0.00 to 1.00
+    preferred_channel VARCHAR(30) DEFAULT 'web_chat',
+    metadata JSONB DEFAULT '{}'::jsonb,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 3. TICKETS TABLE
+CREATE TABLE tickets (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    ticket_number SERIAL UNIQUE,
+    customer_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    assigned_agent_id UUID REFERENCES users(id) ON DELETE SET NULL,
+    subject VARCHAR(255) NOT NULL,
+    description TEXT NOT NULL,
+    status VARCHAR(30) DEFAULT 'open' CHECK (status IN ('open', 'ai_handling', 'in_progress', 'escalated', 'resolved', 'closed')),
+    priority VARCHAR(20) DEFAULT 'medium' CHECK (priority IN ('low', 'medium', 'high', 'critical')),
+    domain_category VARCHAR(50) NOT NULL,
+    sentiment_label VARCHAR(20) DEFAULT 'neutral' CHECK (sentiment_label IN ('positive', 'neutral', 'negative', 'frustrated')),
+    ai_summary TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 4. TICKET MESSAGES TABLE
+CREATE TABLE ticket_messages (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    ticket_id UUID NOT NULL REFERENCES tickets(id) ON DELETE CASCADE,
+    sender_id UUID REFERENCES users(id) ON DELETE SET NULL,
+    sender_type VARCHAR(20) NOT NULL CHECK (sender_type IN ('customer', 'agent', 'ai_assistant', 'system')),
+    message TEXT NOT NULL,
+    sentiment_score DECIMAL(3, 2),
+    is_internal_note BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 5. FEEDBACK TABLE
+CREATE TABLE customer_feedback (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    ticket_id UUID REFERENCES tickets(id) ON DELETE SET NULL,
+    customer_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    csat_rating INT NOT NULL CHECK (csat_rating BETWEEN 1 AND 5),
+    nps_score INT CHECK (nps_score BETWEEN 0 AND 10),
+    qualitative_feedback TEXT,
+    extracted_topics JSONB DEFAULT '[]'::jsonb,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- INDEXES FOR HIGH-PERFORMANCE QUERYING
+CREATE INDEX idx_tickets_customer ON tickets(customer_id);
+CREATE INDEX idx_tickets_status ON tickets(status);
+CREATE INDEX idx_tickets_priority ON tickets(priority);
+CREATE INDEX idx_messages_ticket ON ticket_messages(ticket_id);
+CREATE INDEX idx_feedback_customer ON customer_feedback(customer_id);
+
+```
+
+---
+
+## 11. Row Level Security (RLS) / Data Isolation Rules
+
+* **Customers:**
+* Can strictly read and update ONLY their own user record, customer profile, submitted support tickets, associated ticket messages, and feedback entries.
+* Attempting to query `/api/tickets/:id` where `ticket.customer_id != req.user.id` must return an immediate HTTP `403 Forbidden`.
+
+
+* **Support Agents & Admins:**
+* Can read and modify ALL tickets, customer profiles, system analytics, and feedback records.
+* Internal notes (`is_internal_note = true`) are stripped out completely before returning message payloads to non-agent/customer callers.
+
+
+
+---
+
+## 12. Backend API Routes
+
+Implement full RESTful endpoints with Zod request validation and JWT middleware protection:
+
+### Auth Routes (`/api/auth`)
+
+* `POST /api/auth/register` - Create new customer/agent account + profile.
+* `POST /api/auth/login` - Validate credentials, return signed JWT token.
+* `GET /api/auth/me` - Return current authenticated session profile.
+
+### CX Ticket Engine (`/api/tickets`)
+
+* `GET /api/tickets` - List tickets (Filtered by user ownership for customers; full workspace queue for agents).
+* `POST /api/tickets` - Submit new support ticket. Triggers synchronous AI Triage Pipeline.
+* `GET /api/tickets/:id` - Fetch ticket details + message history.
+* `POST /api/tickets/:id/messages` - Post a customer or agent reply. Triggers AI sentiment re-analysis and auto-copilot suggestions.
+* `PATCH /api/tickets/:id/status` - Update ticket status (e.g., `escalated`, `resolved`).
+
+### Customer 360° API (`/api/customers`)
+
+* `GET /api/customers/:id/360` - Aggregates LTV, active tickets, overall sentiment trajectory, churn indicators, and feedback history.
+* `GET /api/customers/recommendations` - Returns AI-personalized recommendations based on past ticket topics and interaction logs.
+
+### AI Copilot & Insights API (`/api/ai`)
+
+* `POST /api/ai/copilot/suggest` - Generates agent copilot replies using current ticket thread context.
+* `POST /api/ai/chat` - Public/Portal AI Assistant endpoint running autonomous resolution agent logic.
+* `GET /api/ai/analytics/insights` - Runs analytical aggregation on database state to return executive insights, root-cause breakdown, and trend vectors.
+
+---
+
+## 13. Gemini SDK Setup & Server-Side Security
+
+Initialize the official `@google/genai` SDK on the Node.js backend. Keep keys safely inside `.env`.
+
+```javascript
+// backend/config/gemini.js
+import { GoogleGenAI } from '@google/genai';
+import dotenv from 'dotenv';
+
+dotenv.config();
+
+if (!process.env.GEMINI_API_KEY) {
+  throw new Error("FATAL: GEMINI_API_KEY environment variable is missing!");
+}
+
+export const ai = new GoogleGenAI({
+  apiKey: process.env.GEMINI_API_KEY,
+});
+
+export const DEFAULT_MODEL = 'gemini-2.5-flash';
+
+```
+
+---
+
+## 14. AI System Prompt
+
+All backend calls to Gemini for triage, chat, and agent copilot must inject this base system prompt:
+
+```
+You are OmniCX Core AI, an enterprise-grade AI Customer Experience Engine and Support Automation Intelligence.
+Your directive is to deliver empathetic, highly accurate, context-aware, and actionable assistance across the entire customer lifecycle.
+
+Operating Guidelines:
+1. Empathy & Tone: Adapt your tone dynamically based on user sentiment. If the user is frustrated or angry, maintain maximum professional empathy, validate their concern, and prioritize speedy resolution.
+2. Accuracy & Hallucination Guardrail: Rely strictly on provided context, database attributes, knowledge base snippets, and customer history. Never invent order details, policy terms, or fake status codes.
+3. Escalation Precision: Recognize when issue complexity, monetary threshold, or customer churn risk exceeds self-service boundaries. Explicitly request human agent escalation when necessary.
+4. Structured Execution: Always return structured JSON outputs when invoked for automated triage, sentiment scoring, and copilot insights.
+
+```
+
+---
+
+## 15. Detailed AI Prompts (with required JSON Schemas)
+
+### A. Autonomous Ticket Triage Prompt
+
+* **Trigger:** Customer submits a new support ticket.
+* **Backend Endpoint:** Executed inside `POST /api/tickets` handler.
+* **Prompt Construction:**
+
+```javascript
+const triagePrompt = `
+Analyze the following incoming customer support ticket:
+Subject: "${subject}"
+Description: "${description}"
+Domain Category: "${domain_category}"
+
+Perform comprehensive CX triage:
+1. Classify the precise sub-category and intent.
+2. Detect customer sentiment (positive, neutral, negative, frustrated) and output a confidence score (0.0 to 1.0).
+3. Assign an operational priority (low, medium, high, critical).
+4. Generate a concise 2-sentence executive summary for the support agent.
+5. Provide an immediate draft AI response to the customer.
+6. Decide whether this requires immediate escalation to a human agent.
+`;
+
+```
+
+* **SDK Call Specification:**
+
+```javascript
+const response = await ai.models.generateContent({
+  model: DEFAULT_MODEL,
+  contents: triagePrompt,
+  config: {
+    responseMimeType: 'application/json',
+    responseSchema: {
+      type: 'OBJECT',
+      properties: {
+        intent: { type: 'STRING' },
+        sentiment: { type: 'STRING', enum: ['positive', 'neutral', 'negative', 'frustrated'] },
+        sentimentScore: { type: 'NUMBER' },
+        priority: { type: 'STRING', enum: ['low', 'medium', 'high', 'critical'] },
+        summary: { type: 'STRING' },
+        draftResponse: { type: 'STRING' },
+        requiresEscalation: { type: 'BOOLEAN' },
+        escalationReason: { type: 'STRING' }
+      },
+      required: ['intent', 'sentiment', 'priority', 'summary', 'draftResponse', 'requiresEscalation']
+    }
+  }
+});
+
+const triageData = JSON.parse(response.text);
+
+```
+
+### B. Agent Copilot Suggested Response Prompt
+
+* **Trigger:** Support agent requests AI assist in `/admin/tickets/:id`.
+* **SDK Call Specification:**
+
+```javascript
+const copilotPrompt = `
+You are an expert agent copilot assisting a human customer support representative.
+Customer Profile: ${JSON.stringify(customerProfile)}
+Ticket Subject: ${ticket.subject}
+Message Thread History:
+${messages.map(m => `[${m.sender_type.toUpperCase()}]: ${m.message}`).join('\n')}
+
+Generate 3 distinct, high-quality response drafts for the agent:
+1. Empathetic & Apologetic (Ideal for resolving frustration)
+2. Direct & Solution-Focused (Ideal for rapid resolution)
+3. Promotional / Value-Add (Ideal for upselling or building loyalty)
+Include actionable handover notes for internal logging.
+`;
+
+const response = await ai.models.generateContent({
+  model: DEFAULT_MODEL,
+  contents: copilotPrompt,
+  config: {
+    responseMimeType: 'application/json',
+    responseSchema: {
+      type: 'OBJECT',
+      properties: {
+        suggestedReplies: {
+          type: 'ARRAY',
+          items: {
+            type: 'OBJECT',
+            properties: {
+              tone: { type: 'STRING' },
+              replyText: { type: 'STRING' }
+            },
+            required: ['tone', 'replyText']
+          }
+        },
+        handoverNotes: { type: 'STRING' },
+        recommendedNextActions: {
+          type: 'ARRAY',
+          items: { type: 'STRING' }
+        }
+      },
+      required: ['suggestedReplies', 'handoverNotes', 'recommendedNextActions']
+    }
+  }
+});
+
+```
+
+---
+
+## 16. Zod Validation Requirements
+
+Enforce strict validation across API inputs using Zod:
+
+```javascript
+// backend/validators/cxValidators.js
+import { z } from 'zod';
+
+export const registerSchema = z.object({
+  email: z.string().email('Invalid email address format'),
+  password: z.string().min(8, 'Password must be at least 8 characters long'),
+  full_name: z.string().min(2, 'Full name is required'),
+  role: z.enum(['customer', 'agent', 'admin']).default('customer')
+});
+
+export const createTicketSchema = z.object({
+  subject: z.string().min(5, 'Subject must be at least 5 characters').max(255),
+  description: z.string().min(15, 'Description must provide sufficient detail (min 15 chars)'),
+  domain_category: z.enum(['ecommerce', 'saas', 'fintech', 'healthcare', 'general']),
+  priority: z.enum(['low', 'medium', 'high', 'critical']).optional()
+});
+
+export const messageSchema = z.object({
+  message: z.string().min(1, 'Message cannot be empty'),
+  is_internal_note: z.boolean().optional().default(false)
+});
+
+export const feedbackSchema = z.object({
+  ticket_id: z.string().uuid().optional(),
+  csat_rating: z.number().int().min(1).max(5),
+  nps_score: z.number().int().min(0).max(10).optional(),
+  qualitative_feedback: z.string().optional()
+});
+
+```
+
+---
+
+## 17. Frontend Components List
+
+Build modular, cleanly styled React components:
+
+1. `Navbar.jsx` - Dynamic navigation rendering portal links based on JWT user role.
+2. `StatCard.jsx` - Reusable metric card with trend indicators and Lucide icons.
+3. `SentimentBadge.jsx` - Color-coded visual indicator badge for sentiment (`positive` -> green, `frustrated` -> red).
+4. `Customer360Card.jsx` - Comprehensive profile header displaying LTV, sentiment score, and churn risk gauge.
+5. `AIChatWidget.jsx` - Interactive public/portal floating chat drawer with instant streaming responses and quick option chips.
+6. `AgentCopilotPanel.jsx` - Sidebar in ticket detail page featuring AI summary, tone-driven suggested replies, and one-click insertion into the editor.
+7. `CXMetricsChart.jsx` - Recharts component displaying ticket volume, sentiment distribution over time, and AI vs. Human resolution breakdown.
+
+---
+
+## 18. Security Requirements
+
+* **Zero API Key Leakage:** The client codebase must NEVER contain or reference `process.env.GEMINI_API_KEY` or raw API keys. All AI operations are proxied through Node.js Express endpoints.
+* **Password Hashing:** Hash passwords using `bcryptjs` with a salt factor of 10.
+* **JWT Tokens:** Sign tokens with a secure secret stored in `JWT_SECRET`. Set expiration to 24 hours. Verify tokens on protected API routes via auth middleware.
+* **Input Sanitization & Injection Defense:** Validate every incoming payload via Zod schemas. Escape SQL inputs using parameterized queries with `pg`.
+
+---
+
+## 19. Environment Variables Template
+
+Create a `.env.example` file in the root directory:
+
+```env
+# SERVER CONFIG
+PORT=5000
+NODE_ENV=development
+
+# DATABASE CONFIG (PostgreSQL / Supabase)
+DATABASE_URL=postgresql://postgres:password@localhost:5432/omnicx_db
+
+# SECURITY & AUTH
+JWT_SECRET=super_secret_production_jwt_key_omnicx_2026
+
+# AI ENGINE CONFIG (SERVER-SIDE ONLY)
+GEMINI_API_KEY=AIzaSy_YOUR_GEMINI_API_KEY_HERE
+
+```
+
+---
+
+## 20. Suggested Folder Structure
+
+```
+omnicx-app/
+├── backend/
+│   ├── config/
+│   │   ├── db.js
+│   │   └── gemini.js
+│   ├── middleware/
+│   │   ├── authMiddleware.js
+│   │   └── errorHandler.js
+│   ├── routes/
+│   │   ├── authRoutes.js
+│   │   ├── ticketRoutes.js
+│   │   ├── customerRoutes.js
+│   │   └── aiRoutes.js
+│   ├── services/
+│   │   ├── aiTriageService.js
+│   │   └── copilotService.js
+│   ├── validators/
+│   │   └── cxValidators.js
+│   └── server.js
+├── frontend/
+│   ├── src/
+│   │   ├── assets/
+│   │   ├── components/
+│   │   │   ├── Navbar.jsx
+│   │   │   ├── StatCard.jsx
+│   │   │   ├── SentimentBadge.jsx
+│   │   │   ├── Customer360Card.jsx
+│   │   │   ├── AIChatWidget.jsx
+│   │   │   └── AgentCopilotPanel.jsx
+│   │   ├── pages/
+│   │   │   ├── LandingPage.jsx
+│   │   │   ├── LoginPage.jsx
+│   │   │   ├── CustomerPortal.jsx
+│   │   │   ├── AdminDashboard.jsx
+│   │   │   ├── UnifiedTicketsQueue.jsx
+│   │   │   ├── TicketDetailWorkspace.jsx
+│   │   │   └── CustomerDirectory.jsx
+│   │   ├── context/
+│   │   │   └── AuthContext.jsx
+│   │   ├── services/
+│   │   │   └── api.js
+│   │   ├── App.jsx
+│   │   └── main.jsx
+│   ├── index.html
+│   ├── vite.config.js
+│   └── tailwind.config.js
+├── .env.example
+├── package.json
+└── README.md
+
+```
+
+---
+
+## 21. Implementation Phases
+
+Follow this sequence to build out the application step-by-step:
+
+### Phase 1: Database Setup & Core Auth Engine
+
+* Initialize PostgreSQL database and execute the SQL DDL script from Section 10.
+* Setup Node.js backend structure with `express`, `pg`, `jsonwebtoken`, and `bcryptjs`.
+* Implement `/api/auth/register` and `/api/auth/login` endpoints with Zod validation.
+
+### Phase 2: Ticket Management & Customer 360 Core
+
+* Implement RESTful CRUD endpoints for `/api/tickets` and `/api/customers`.
+* Build frontend React router structure, Tailwind layout, and authentication context store.
+* Build Customer Portal (`/portal`) for submitting tickets and viewing status.
+
+### Phase 3: Server-Side Gemini API Integration & AI Triage
+
+* Configure `@google/genai` in `backend/config/gemini.js`.
+* Build the automated AI Triage Service (`aiTriageService.js`).
+* Connect `POST /api/tickets` to automatically run new tickets through Gemini structured triage to extract intent, sentiment, priority, and draft responses.
+
+### Phase 4: Agent Copilot & Unified Operator Workspace
+
+* Build the Admin/Agent Workspace (`/admin/tickets`).
+* Construct `AgentCopilotPanel.jsx` in the ticket detail view.
+* Connect `POST /api/ai/copilot/suggest` to generate tone-adjusted suggested responses and handover summaries for support agents.
+
+### Phase 5: Autonomous AI Chat Assistant & Executive Analytics
+
+* Implement `/portal/chat` featuring real-time AI resolution support.
+* Build the executive intelligence dashboard (`/admin/dashboard` & `/admin/insights`) with Recharts visual charts displaying live CSAT, sentiment trends, and root-cause support drivers.
+
+---
+
+## 22. Acceptance Criteria
+
+Your complete solution must satisfy every single criterion below:
+
+1. **Zero Raw Placeholders:** No `// TODO: implement later` comments. All functions, components, and API routes must be fully functional.
+2. **Deterministic Structured AI Outputs:** All automated triage and copilot operations use Google Gemini's JSON schema mode (`responseMimeType: 'application/json'`) via `@google/genai`.
+3. **Strict Security Posture:** Gemini API key resides solely on the Express backend server. Frontend accesses AI via authenticated proxy routes.
+4. **Data Isolation:** Customers cannot view or fetch tickets, messages, or profiles belonging to other users.
+5. **Multi-Role UX:** Distinct interface flows for Customers (Portal/Chat) vs. Support Agents/Admins (Unified Inbox/Copilot/Analytics).
+6. **Fully Validated Pipelines:** All incoming API requests validated using Zod middleware before database or AI execution.
+
+---
+
+## 23. Final Instruction to Coding Agent
+
+**Execute full build now.** Start by initializing the project files, setting up the Express backend server, provisioning the database schema, configuring `@google/genai`, and generating all frontend routes and UI components. Ensure every file is complete, syntactically perfect, and immediately run-ready.

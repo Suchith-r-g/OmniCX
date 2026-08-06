@@ -10,6 +10,8 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: cx
+    description: OmniCX customer experience operations
 paths:
   /healthz:
     get:
@@ -24,7 +26,167 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /cx/dashboard:
+    get:
+      operationId: getCxDashboard
+      tags: [cx]
+      summary: Get CX command center dashboard
+      responses:
+        "200":
+          description: Dashboard data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CxDashboard"
+  /cx/tickets:
+    get:
+      operationId: listCxTickets
+      tags: [cx]
+      summary: List customer support tickets
+      responses:
+        "200":
+          description: Ticket queue
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CxTicket"
+    post:
+      operationId: createCxTicket
+      tags: [cx]
+      summary: Create a customer support ticket
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CxTicketInput"
+      responses:
+        "201":
+          description: Created ticket
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CxTicket"
+  /cx/tickets/{id}:
+    get:
+      operationId: getCxTicket
+      tags: [cx]
+      summary: Get a ticket with its message history
+      parameters:
+        - $ref: "#/components/parameters/CxId"
+      responses:
+        "200":
+          description: Ticket detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CxTicketDetail"
+  /cx/tickets/{id}/status:
+    patch:
+      operationId: updateCxTicketStatus
+      tags: [cx]
+      summary: Update ticket status
+      parameters:
+        - $ref: "#/components/parameters/CxId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CxTicketStatusInput"
+      responses:
+        "200":
+          description: Updated ticket
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CxTicket"
+  /cx/customers:
+    get:
+      operationId: listCxCustomers
+      tags: [cx]
+      summary: List customer 360 records
+      responses:
+        "200":
+          description: Customer directory
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CxCustomer"
+  /cx/customers/{id}/360:
+    get:
+      operationId: getCxCustomer360
+      tags: [cx]
+      summary: Get a customer 360 record
+      parameters:
+        - $ref: "#/components/parameters/CxId"
+      responses:
+        "200":
+          description: Customer 360 detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CxCustomer360"
+  /cx/insights:
+    get:
+      operationId: getCxInsights
+      tags: [cx]
+      summary: Get CX intelligence insights
+      responses:
+        "200":
+          description: Executive intelligence
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CxInsights"
+  /cx/chat:
+    post:
+      operationId: sendCxChat
+      tags: [cx]
+      summary: Send a message to the CX assistant
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CxChatInput"
+      responses:
+        "200":
+          description: Assistant reply
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CxChatReply"
+  /cx/copilot:
+    post:
+      operationId: getCxCopilot
+      tags: [cx]
+      summary: Generate agent copilot suggestions
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CxCopilotInput"
+      responses:
+        "200":
+          description: Copilot suggestions
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CxCopilot"
 components:
+  parameters:
+    CxId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
   schemas:
     HealthStatus:
       type: object
@@ -33,4 +195,206 @@ components:
           type: string
       required:
         - status
+    CxTicket:
+      type: object
+      required: [id, number, subject, customer, status, priority, sentiment, category, updatedAt, sla]
+      properties:
+        id: { type: string }
+        number: { type: string }
+        subject: { type: string }
+        customer: { type: string }
+        customerId: { type: string }
+        status: { type: string }
+        priority: { type: string }
+        sentiment: { type: string }
+        category: { type: string }
+        channel: { type: string }
+        updatedAt: { type: string }
+        sla: { type: string }
+        summary: { type: string }
+    CxTicketInput:
+      type: object
+      required: [subject, description, category]
+      properties:
+        subject: { type: string, minLength: 5 }
+        description: { type: string, minLength: 10 }
+        category: { type: string }
+        priority: { type: string }
+    CxTicketStatusInput:
+      type: object
+      required: [status]
+      properties:
+        status: { type: string }
+    CxMessage:
+      type: object
+      required: [id, sender, text, time]
+      properties:
+        id: { type: string }
+        sender: { type: string }
+        senderType: { type: string }
+        text: { type: string }
+        time: { type: string }
+        sentiment: { type: string }
+    CxTicketDetail:
+      allOf:
+        - $ref: "#/components/schemas/CxTicket"
+        - type: object
+          required: [messages]
+          properties:
+            messages:
+              type: array
+              items:
+                $ref: "#/components/schemas/CxMessage"
+            copilot:
+              $ref: "#/components/schemas/CxCopilot"
+    CxCustomer:
+      type: object
+      required: [id, name, company, email, ltv, sentiment, churnRisk, openTickets, lastSeen]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        company: { type: string }
+        email: { type: string }
+        ltv: { type: number }
+        sentiment: { type: number }
+        churnRisk: { type: number }
+        openTickets: { type: number }
+        lastSeen: { type: string }
+        initials: { type: string }
+    CxCustomer360:
+      allOf:
+        - $ref: "#/components/schemas/CxCustomer"
+        - type: object
+          required: [timeline, feedback]
+          properties:
+            timeline:
+              type: array
+              items:
+                $ref: "#/components/schemas/CxMessage"
+            feedback:
+              type: array
+              items:
+                type: string
+    CxDashboard:
+      type: object
+      required: [metrics, sentiment, volume, drivers, recentActivity]
+      properties:
+        metrics:
+          type: array
+          items:
+            $ref: "#/components/schemas/CxMetric"
+        sentiment:
+          type: array
+          items:
+            $ref: "#/components/schemas/CxChartPoint"
+        volume:
+          type: array
+          items:
+            $ref: "#/components/schemas/CxChartPoint"
+        drivers:
+          type: array
+          items:
+            $ref: "#/components/schemas/CxDriver"
+        recentActivity:
+          type: array
+          items:
+            $ref: "#/components/schemas/CxActivity"
+    CxMetric:
+      type: object
+      required: [label, value, delta, trend]
+      properties:
+        label: { type: string }
+        value: { type: string }
+        delta: { type: string }
+        trend: { type: string }
+        icon: { type: string }
+    CxChartPoint:
+      type: object
+      required: [label, value]
+      properties:
+        label: { type: string }
+        value: { type: number }
+        secondary: { type: number }
+    CxDriver:
+      type: object
+      required: [label, count, share, trend]
+      properties:
+        label: { type: string }
+        count: { type: number }
+        share: { type: number }
+        trend: { type: string }
+    CxActivity:
+      type: object
+      required: [id, title, detail, time, kind]
+      properties:
+        id: { type: string }
+        title: { type: string }
+        detail: { type: string }
+        time: { type: string }
+        kind: { type: string }
+    CxInsights:
+      type: object
+      required: [summary, themes, opportunities]
+      properties:
+        summary: { type: string }
+        themes:
+          type: array
+          items:
+            $ref: "#/components/schemas/CxInsightTheme"
+        opportunities:
+          type: array
+          items:
+            $ref: "#/components/schemas/CxOpportunity"
+    CxInsightTheme:
+      type: object
+      required: [label, description, impact, volume]
+      properties:
+        label: { type: string }
+        description: { type: string }
+        impact: { type: string }
+        volume: { type: number }
+    CxOpportunity:
+      type: object
+      required: [title, description, owner, confidence]
+      properties:
+        title: { type: string }
+        description: { type: string }
+        owner: { type: string }
+        confidence: { type: number }
+    CxChatInput:
+      type: object
+      required: [message]
+      properties:
+        message: { type: string, minLength: 1 }
+    CxChatReply:
+      type: object
+      required: [message, intent, suggestedActions]
+      properties:
+        message: { type: string }
+        intent: { type: string }
+        suggestedActions:
+          type: array
+          items: { type: string }
+    CxCopilotInput:
+      type: object
+      required: [ticketId, tone]
+      properties:
+        ticketId: { type: string }
+        tone: { type: string }
+    CxCopilot:
+      type: object
+      required: [suggestedReplies, handoverNotes, recommendedNextActions]
+      properties:
+        suggestedReplies:
+          type: array
+          items:
+            type: object
+            required: [tone, replyText]
+            properties:
+              tone: { type: string }
+              replyText: { type: string }
+        handoverNotes: { type: string }
+        recommendedNextActions:
+          type: array
+          items: { type: string }
 
