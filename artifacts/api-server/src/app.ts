@@ -80,7 +80,7 @@ app.get(["/healthz", "/api/healthz"], async (_req: Request, res: Response) => {
 
 import path from "path";
 
-const publicPath = path.resolve(import.meta.dirname, "../../omnicx-ai/dist/public");
+const publicPath = path.resolve(import.meta.dirname, "../../omnicx-ai/dist");
 app.use(express.static(publicPath));
 
 app.use("/api", router);
