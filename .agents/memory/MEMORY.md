@@ -1,0 +1,1 @@
+- [Workspace client declarations](workspace-client-declarations.md) — rebuild composite shared packages when generated source exports are missing from consuming app typechecks.
