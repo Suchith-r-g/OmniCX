@@ -395,6 +395,33 @@ router.post("/cx/chat", chatLimiter, async (req, res): Promise<void> => {
   }
 });
 
+router.post("/cx/voice/chat", chatLimiter, async (req, res): Promise<void> => {
+  const { message, language = "English" } = req.body ?? {};
+  if (!message || typeof message !== "string") {
+    res.status(400).json({ error: "Message string is required" });
+    return;
+  }
+
+  const voicePrompt = `You are Varsha, a professional and empathetic customer support executive from OmniCX AI.
+Customer speaks: "${message}".
+Language requested: ${language}.
+RULES FOR VOICE RESPONSE:
+1. Your name is Varsha.
+2. Keep your answer brief and conversational (1 to 3 sentences maximum), ideal for text-to-speech voice playback.
+3. Be warm, helpful, and natural.
+4. Reply ONLY in JSON format: { "message": "your voice response text here", "language": "${language}" }`;
+
+  try {
+    const { data } = await generateJsonValidated<{ message: string; language: string }>(voicePrompt);
+    res.json({ message: data.message, language: data.language || language });
+  } catch {
+    const fallbackText = language === "Hindi"
+      ? "जी हाँ, मैं आपकी सहायता के लिए यहाँ हूँ। कृपया मुझे और विवरण बताएँ।"
+      : "Hello! I am Varsha from OmniCX. How can I assist you with your support request today?";
+    res.json({ message: fallbackText, language });
+  }
+});
+
 router.post("/cx/copilot", staff, copilotLimiter, async (req, res): Promise<void> => {
   const parsed = GetCxCopilotBody.safeParse(req.body);
   if (!parsed.success) { res.status(400).json({ error: "Invalid copilot body" }); return; }

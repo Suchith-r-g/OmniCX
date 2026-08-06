@@ -44,8 +44,8 @@ function useClerk() {
 }
 import {
   ArrowRight, BarChart3, Bot, Check, ChevronLeft, Clock3, Command,
-  FileText, Inbox, LayoutDashboard, Lightbulb, Lock, MessageCircle, Plus,
-  RefreshCw, Search, Send, Shield, Sparkles, Star, Ticket, TrendingUp, Users, X, Zap
+  FileText, Globe, Inbox, LayoutDashboard, Lightbulb, Lock, MessageCircle, Mic, MicOff, Phone, PhoneOff, Plus,
+  RefreshCw, Search, Send, Shield, Sparkles, Star, Ticket, TrendingUp, Users, Volume2, X, Zap
 } from 'lucide-react';
 import {
   getGetCxDashboardQueryKey, getGetCxTicketQueryKey, getListCxTicketsQueryKey, getListCxCustomersQueryKey,
@@ -602,9 +602,281 @@ function CustomerTicketDetail() {
   );
 }
 
+function VoiceCallModal({ onClose, customerName }: { onClose: () => void; customerName: string }) {
+  const [isMuted, setIsMuted] = useState(false);
+  const [language, setLanguage] = useState<'English' | 'Hindi'>('English');
+  const [duration, setDuration] = useState(0);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const [statusText, setStatusText] = useState('Connecting to Varsha...');
+  const [transcript, setTranscript] = useState<{ sender: 'user' | 'agent'; text: string }[]>([]);
+  const [currentText, setCurrentText] = useState('');
+  
+  const recognitionRef = useRef<any>(null);
+  const timerRef = useRef<any>(null);
+
+  useEffect(() => {
+    timerRef.current = setInterval(() => {
+      setDuration((d) => d + 1);
+    }, 1000);
+    return () => clearInterval(timerRef.current);
+  }, []);
+
+  const formatDuration = (s: number) => {
+    const mins = Math.floor(s / 60).toString().padStart(2, '0');
+    const secs = (s % 60).toString().padStart(2, '0');
+    return `${mins}:${secs}`;
+  };
+
+  const speakText = (text: string) => {
+    if (!('speechSynthesis' in window)) return;
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = language === 'Hindi' ? 'hi-IN' : 'en-US';
+    utterance.rate = 1.0;
+    utterance.pitch = 1.05;
+
+    const voices = window.speechSynthesis.getVoices();
+    const voice = voices.find((v) =>
+      language === 'Hindi'
+        ? v.lang.includes('hi')
+        : (v.name.includes('Female') || v.name.includes('Google') || v.name.includes('Natural') || v.name.includes('Samantha')) && v.lang.includes('en')
+    );
+    if (voice) utterance.voice = voice;
+
+    utterance.onstart = () => {
+      setIsSpeaking(true);
+      setStatusText('Varsha is speaking...');
+    };
+
+    utterance.onend = () => {
+      setIsSpeaking(false);
+      setStatusText('Listening for your response...');
+      startListening();
+    };
+
+    utterance.onerror = () => {
+      setIsSpeaking(false);
+      setStatusText('Listening...');
+      startListening();
+    };
+
+    window.speechSynthesis.speak(utterance);
+  };
+
+  const handleUserSpeech = async (userText: string) => {
+    if (!userText.trim()) return;
+    setTranscript((prev) => [...prev, { sender: 'user', text: userText }]);
+    setStatusText('Varsha is thinking...');
+    setIsListening(false);
+
+    try {
+      const res = await fetch('/api/cx/voice/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: userText, language }),
+      });
+      const data = await res.json();
+      const aiReply = data.message || "I'm here to help. Could you tell me a bit more?";
+      setTranscript((prev) => [...prev, { sender: 'agent', text: aiReply }]);
+      speakText(aiReply);
+    } catch {
+      const fallbackMsg = language === 'Hindi'
+        ? "माफ़ कीजिए, मुझे आपकी बात समझ नहीं आई। क्या आप दोबारा कह सकते हैं?"
+        : "I'm here to help with your account. Could you please repeat that?";
+      setTranscript((prev) => [...prev, { sender: 'agent', text: fallbackMsg }]);
+      speakText(fallbackMsg);
+    }
+  };
+
+  const startListening = () => {
+    if (isMuted) return;
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      setStatusText('Speech recognition not supported in this browser. Use text chat below.');
+      return;
+    }
+
+    try {
+      if (recognitionRef.current) {
+        recognitionRef.current.abort();
+      }
+      const recognition = new SpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = true;
+      recognition.lang = language === 'Hindi' ? 'hi-IN' : 'en-US';
+
+      recognition.onstart = () => {
+        setIsListening(true);
+        setStatusText('Listening for your voice...');
+      };
+
+      recognition.onresult = (event: any) => {
+        const result = event.results[event.results.length - 1];
+        const text = result[0].transcript;
+        setCurrentText(text);
+        if (result.isFinal) {
+          setCurrentText('');
+          handleUserSpeech(text);
+        }
+      };
+
+      recognition.onerror = () => {
+        setIsListening(false);
+        setStatusText('Tap microphone to speak...');
+      };
+
+      recognition.onend = () => {
+        setIsListening(false);
+      };
+
+      recognitionRef.current = recognition;
+      recognition.start();
+    } catch {}
+  };
+
+  useEffect(() => {
+    const initialGreeting = language === 'Hindi'
+      ? `नमस्ते! मैं वर्षा हूँ, OmniCX से। मैं आपकी क्या मदद कर सकती हूँ?`
+      : `Hello ${customerName === 'there' ? '' : customerName}! I am Varsha, your OmniCX Voice Assistant. How can I help you today?`;
+    
+    setTranscript([{ sender: 'agent', text: initialGreeting }]);
+    setTimeout(() => {
+      speakText(initialGreeting);
+    }, 500);
+
+    return () => {
+      if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+      if (recognitionRef.current) recognitionRef.current.abort();
+    };
+  }, [language]);
+
+  const handleEndCall = () => {
+    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+    if (recognitionRef.current) recognitionRef.current.abort();
+    onClose();
+  };
+
+  const toggleMute = () => {
+    if (!isMuted) {
+      if (recognitionRef.current) recognitionRef.current.abort();
+      setIsListening(false);
+      setStatusText('Microphone Muted');
+    } else {
+      startListening();
+    }
+    setIsMuted(!isMuted);
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#1f2340]/90 p-4 backdrop-blur-md">
+      <div className="flex w-full max-w-lg flex-col overflow-hidden rounded-3xl border border-[#3e4360] bg-[#1f2340] text-[#f7f7f3] shadow-2xl">
+        <div className="flex items-center justify-between border-b border-[#323754] px-6 py-4">
+          <div className="flex items-center gap-3">
+            <span className="relative flex h-3 w-3">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#f26b5b] opacity-75"></span>
+              <span className="relative inline-flex h-3 w-3 rounded-full bg-[#f26b5b]"></span>
+            </span>
+            <div>
+              <div className="font-display text-sm font-bold">Varsha — Voice Agent</div>
+              <div className="font-mono text-[10px] text-[#a1a5c1]">OmniCX AI Support</div>
+            </div>
+          </div>
+          <div className="font-mono text-xs font-bold text-[#f8e5a7]">{formatDuration(duration)}</div>
+        </div>
+
+        <div className="flex flex-col items-center justify-center p-8 text-center">
+          <div className="relative mb-6 flex h-28 w-28 items-center justify-center rounded-full bg-[#2a2f4e] shadow-[0_0_40px_rgba(242,107,91,0.25)]">
+            <div className={`absolute inset-0 rounded-full border-2 border-[#f26b5b]/50 ${isSpeaking ? 'animate-ping' : ''}`} />
+            <Bot size={44} className="text-[#f26b5b]" />
+          </div>
+
+          <div className="mb-4 flex h-8 items-center gap-1.5">
+            {[40, 75, 100, 60, 90, 45, 80, 55, 30].map((h, i) => (
+              <span
+                key={i}
+                className={`w-1 rounded-full transition-all duration-200 ${
+                  isSpeaking
+                    ? 'bg-[#f26b5b] animate-pulse'
+                    : isListening
+                    ? 'bg-[#65b7a9] animate-pulse'
+                    : 'bg-[#404667]'
+                }`}
+                style={{
+                  height: isSpeaking || isListening ? `${Math.max(10, Math.sin(duration * 2 + i) * h)}px` : '8px',
+                }}
+              />
+            ))}
+          </div>
+
+          <div className="font-mono text-xs text-[#a4a9c6]">{statusText}</div>
+        </div>
+
+        <div className="mx-6 mb-6 max-h-44 space-y-3 overflow-y-auto rounded-2xl bg-[#171a30] p-4 text-xs">
+          {transcript.map((t, idx) => (
+            <div key={idx} className={`flex gap-2 ${t.sender === 'user' ? 'text-[#65b7a9]' : 'text-[#f7f7f3]'}`}>
+              <b className="shrink-0">{t.sender === 'user' ? 'You:' : 'Varsha:'}</b>
+              <span>{t.text}</span>
+            </div>
+          ))}
+          {currentText && (
+            <div className="flex gap-2 text-[#a8b0d8] italic">
+              <b className="shrink-0">Hearing:</b>
+              <span>{currentText}...</span>
+            </div>
+          )}
+        </div>
+
+        <div className="flex items-center justify-around border-t border-[#323754] bg-[#191c33] px-6 py-5">
+          <button
+            type="button"
+            onClick={toggleMute}
+            className={`flex h-12 w-12 items-center justify-center rounded-2xl transition-all ${
+              isMuted ? 'bg-[#a8463d] text-[#f7f7f3]' : 'bg-[#2a2f4e] text-[#f7f7f3] hover:bg-[#343a5f]'
+            }`}
+            title={isMuted ? 'Unmute Mic' : 'Mute Mic'}
+          >
+            {isMuted ? <MicOff size={20} /> : <Mic size={20} />}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setLanguage(language === 'English' ? 'Hindi' : 'English')}
+            className="flex h-12 items-center gap-2 rounded-2xl bg-[#2a2f4e] px-4 text-xs font-bold text-[#f8e5a7] hover:bg-[#343a5f]"
+            title="Switch Language"
+          >
+            <Globe size={18} />
+            {language}
+          </button>
+
+          {!isSpeaking && !isListening && !isMuted && (
+            <button
+              type="button"
+              onClick={startListening}
+              className="flex h-12 items-center gap-2 rounded-2xl bg-[#65b7a9] px-4 text-xs font-bold text-[#1f2340]"
+            >
+              <Volume2 size={18} /> Speak Now
+            </button>
+          )}
+
+          <button
+            type="button"
+            onClick={handleEndCall}
+            className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#f26b5b] text-[#1f2340] shadow-[0_4px_15px_rgba(242,107,91,0.4)] hover:bg-[#e05545]"
+            title="End Call"
+          >
+            <PhoneOff size={20} />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function Chat() {
   const send = useSendCxChat();
   const [, setLocation] = useLocation();
+  const [voiceCallOpen, setVoiceCallOpen] = useState(false);
   const { user } = useUser();
   const customerName = user?.fullName
     || [user?.firstName, user?.lastName].filter(Boolean).join(' ')
@@ -646,7 +918,102 @@ function Chat() {
     submit(action);
   };
 
-  return <Portal><div className="mx-auto max-w-[800px]"><div className="mb-8 text-center"><span className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-[#f26b5b]"><Bot/></span><div className="mt-4 font-mono text-[10px] uppercase tracking-[.18em] text-[#f26b5b]">Omni assistant</div><h1 className="mt-2 font-display text-4xl font-bold tracking-[-.06em]">A little clarity, on demand.</h1><p className="mt-2 text-sm text-[#747588]">I can see your account context, but I will always explain before I act.</p></div><div className="overflow-hidden rounded-2xl border border-[#e1e1da] bg-[#fbfbf7]"><div className="flex items-center gap-3 border-b border-[#e8e8e1] px-5 py-4"><span className={`h-2 w-2 rounded-full ${send.isPending?'animate-pulse bg-[#f8b84e]':'bg-[#65b7a9]'}`}/><b className="text-xs">{send.isPending?'Assistant is thinking…':'Assistant is online'}</b><span className="ml-auto font-mono text-[10px] text-[#8b8c9c]">CONTEXT: {customerName}</span></div><div className="min-h-[360px] space-y-5 p-5 md:p-8">{ms.map((m,i)=><div key={i} className={`flex gap-3 ${m.role==='user'?'justify-end':''}`}>{m.role==='assistant'&&<span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#d7f2ed]"><Bot size={15}/></span>}<div className={`max-w-[78%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${m.role==='user'?'rounded-br-md bg-[#1f2340] text-[#f7f7f3]':'rounded-bl-md bg-[#eeeee8]'}`}><div>{m.text}</div>{m.actions?.map((a:string)=><button type="button" data-testid={`button-action-${cx(a)}`} onClick={()=>handleAction(a)} disabled={send.isPending} key={a} className="mt-3 block text-left text-xs font-bold text-[#a8463d] underline-offset-2 hover:underline disabled:cursor-wait disabled:opacity-60">{a}<ArrowRight size={12} className="ml-1 inline"/></button>)}</div></div>)}{send.isPending&&<div className="flex gap-3"><span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#d7f2ed]"><Bot size={15}/></span><div className="rounded-2xl rounded-bl-md bg-[#eeeee8] px-4 py-3 text-sm text-[#747588]">Thinking through that…</div></div>}</div><div className="border-t border-[#e8e8e1] p-4"><div className="flex items-end gap-2 rounded-xl border border-[#d7d7cf] bg-[#f7f7f3] p-2"><textarea data-testid="input-chat-message" value={input} disabled={send.isPending} onChange={e=>setInput(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();submit();}}} placeholder="Ask about your account..." rows={2} className="flex-1 resize-none bg-transparent px-2 py-1 text-sm outline-none disabled:opacity-60"/><button type="button" aria-label="Send message" data-testid="button-send-chat" disabled={send.isPending} onClick={()=>submit()} className="grid h-10 w-10 place-items-center rounded-lg bg-[#f26b5b] disabled:cursor-wait disabled:opacity-60"><Send size={16}/></button></div></div></div></div></Portal>;
+  return (
+    <Portal>
+      {voiceCallOpen && <VoiceCallModal customerName={customerName} onClose={() => setVoiceCallOpen(false)} />}
+      <div className="mx-auto max-w-[800px]">
+        <div className="mb-8 text-center">
+          <span className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-[#f26b5b]">
+            <Bot />
+          </span>
+          <div className="mt-4 font-mono text-[10px] uppercase tracking-[.18em] text-[#f26b5b]">Omni assistant</div>
+          <h1 className="mt-2 font-display text-4xl font-bold tracking-[-.06em]">A little clarity, on demand.</h1>
+          <p className="mt-2 text-sm text-[#747588]">I can see your account context, but I will always explain before I act.</p>
+        </div>
+        <div className="overflow-hidden rounded-2xl border border-[#e1e1da] bg-[#fbfbf7]">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#e8e8e1] px-5 py-4">
+            <div className="flex items-center gap-3">
+              <span className={`h-2 w-2 rounded-full ${send.isPending ? 'animate-pulse bg-[#f8b84e]' : 'bg-[#65b7a9]'}`} />
+              <b className="text-xs">{send.isPending ? 'Assistant is thinking…' : 'Assistant is online'}</b>
+              <span className="font-mono text-[10px] text-[#8b8c9c]">CONTEXT: {customerName}</span>
+            </div>
+            <button
+              type="button"
+              data-testid="button-start-voice-call"
+              onClick={() => setVoiceCallOpen(true)}
+              className="flex items-center gap-2 rounded-xl bg-[#f26b5b] px-3.5 py-2 text-xs font-bold text-[#1f2340] shadow-sm hover:bg-[#e05545]"
+            >
+              <Phone size={14} /> Start AI Voice Call 🎙️
+            </button>
+          </div>
+          <div className="min-h-[360px] space-y-5 p-5 md:p-8">
+            {ms.map((m, i) => (
+              <div key={i} className={`flex gap-3 ${m.role === 'user' ? 'justify-end' : ''}`}>
+                {m.role === 'assistant' && (
+                  <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#d7f2ed]">
+                    <Bot size={15} />
+                  </span>
+                )}
+                <div className={`max-w-[78%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${m.role === 'user' ? 'rounded-br-md bg-[#1f2340] text-[#f7f7f3]' : 'rounded-bl-md bg-[#eeeee8]'}`}>
+                  <div>{m.text}</div>
+                  {m.actions?.map((a: string) => (
+                    <button
+                      type="button"
+                      data-testid={`button-action-${cx(a)}`}
+                      onClick={() => handleAction(a)}
+                      disabled={send.isPending}
+                      key={a}
+                      className="mt-3 block text-left text-xs font-bold text-[#a8463d] underline-offset-2 hover:underline disabled:cursor-wait disabled:opacity-60"
+                    >
+                      {a}
+                      <ArrowRight size={12} className="ml-1 inline" />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+            {send.isPending && (
+              <div className="flex gap-3">
+                <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#d7f2ed]">
+                  <Bot size={15} />
+                </span>
+                <div className="rounded-2xl rounded-bl-md bg-[#eeeee8] px-4 py-3 text-sm text-[#747588]">Thinking through that…</div>
+              </div>
+            )}
+          </div>
+          <div className="border-t border-[#e8e8e1] p-4">
+            <div className="flex items-end gap-2 rounded-xl border border-[#d7d7cf] bg-[#f7f7f3] p-2">
+              <textarea
+                data-testid="input-chat-message"
+                value={input}
+                disabled={send.isPending}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    submit();
+                  }
+                }}
+                placeholder="Ask about your account..."
+                rows={2}
+                className="flex-1 resize-none bg-transparent px-2 py-1 text-sm outline-none disabled:opacity-60"
+              />
+              <button
+                type="button"
+                aria-label="Send message"
+                data-testid="button-send-chat"
+                disabled={send.isPending}
+                onClick={() => submit()}
+                className="grid h-10 w-10 place-items-center rounded-lg bg-[#f26b5b] disabled:cursor-wait disabled:opacity-60"
+              >
+                <Send size={16} />
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Portal>
+  );
 }
 
 function RaiseTicket() {
