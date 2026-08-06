@@ -628,21 +628,51 @@ function VoiceCallModal({ onClose, customerName }: { onClose: () => void; custom
     return `${mins}:${secs}`;
   };
 
+  const getFemaleVoice = (lang: 'English' | 'Hindi') => {
+    if (!('speechSynthesis' in window)) return null;
+    const voices = window.speechSynthesis.getVoices();
+    if (!voices || voices.length === 0) return null;
+
+    const maleKeywords = ['male', 'david', 'mark', 'george', 'richard', 'alex', 'james', 'ravi', 'hemant', 'guy', 'stefan'];
+    const isMale = (name: string) => maleKeywords.some((m) => name.toLowerCase().includes(m));
+
+    if (lang === 'Hindi') {
+      const hindiVoice = voices.find((v) => v.lang.includes('hi') && !isMale(v.name));
+      if (hindiVoice) return hindiVoice;
+    }
+
+    const femaleKeywords = ['female', 'zira', 'eva', 'samantha', 'victoria', 'karen', 'fiona', 'google uk english female', 'google us english', 'natural', 'hazel', 'susan', 'catherine'];
+    const femaleVoice = voices.find((v) =>
+      v.lang.includes('en') &&
+      !isMale(v.name) &&
+      femaleKeywords.some((k) => v.name.toLowerCase().includes(k))
+    );
+
+    if (femaleVoice) return femaleVoice;
+    return voices.find((v) => v.lang.includes('en') && !isMale(v.name)) || null;
+  };
+
+  useEffect(() => {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.getVoices();
+      window.speechSynthesis.onvoiceschanged = () => {
+        window.speechSynthesis.getVoices();
+      };
+    }
+  }, []);
+
   const speakText = (text: string) => {
     if (!('speechSynthesis' in window)) return;
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = language === 'Hindi' ? 'hi-IN' : 'en-US';
     utterance.rate = 1.0;
-    utterance.pitch = 1.05;
+    utterance.pitch = 1.15;
 
-    const voices = window.speechSynthesis.getVoices();
-    const voice = voices.find((v) =>
-      language === 'Hindi'
-        ? v.lang.includes('hi')
-        : (v.name.includes('Female') || v.name.includes('Google') || v.name.includes('Natural') || v.name.includes('Samantha')) && v.lang.includes('en')
-    );
-    if (voice) utterance.voice = voice;
+    const femaleVoice = getFemaleVoice(language);
+    if (femaleVoice) {
+      utterance.voice = femaleVoice;
+    }
 
     utterance.onstart = () => {
       setIsSpeaking(true);
