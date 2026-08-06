@@ -49,7 +49,17 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS
 app.use(
   cors({
     credentials: true,
-    origin: allowedOrigins || true,
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+      if (
+        !allowedOrigins ||
+        allowedOrigins.includes("*") ||
+        allowedOrigins.includes(origin)
+      ) {
+        return callback(null, origin);
+      }
+      return callback(null, false);
+    },
   }),
 );
 

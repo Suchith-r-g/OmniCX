@@ -59,15 +59,20 @@ if (import.meta.env.VITE_API_BASE_URL) {
   setBaseUrl(import.meta.env.VITE_API_BASE_URL);
 }
 
+// Default auth token getter for demo/guest mode
+setAuthTokenGetter(async () => "user_demo");
+
 function ClerkTokenSync() {
   const { getToken } = useRealAuth();
   useEffect(() => {
     setAuthTokenGetter(async () => {
-      try {
-        return await getToken();
-      } catch {
-        return null;
+      if (hasRealClerkKey) {
+        try {
+          const token = await getToken();
+          if (token) return token;
+        } catch {}
       }
+      return "user_demo";
     });
   }, [getToken]);
   return null;
