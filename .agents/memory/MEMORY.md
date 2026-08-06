@@ -1,1 +1,2 @@
 - [Workspace client declarations](workspace-client-declarations.md) — rebuild composite shared packages when generated source exports are missing from consuming app typechecks.
+- [Gemini credential validation](gemini-credential-validation.md) — test the configured key against the Gemini SDK; invalid keys must not be hidden behind one generic chat fallback.
