@@ -661,10 +661,15 @@ function VoiceCallModal({ onClose, customerName }: { onClose: () => void; custom
     }
   }, []);
 
+  const getPhoneticSpeechText = (text: string) => {
+    return text.replace(/\bShizuka\b/gi, 'Sheezooka');
+  };
+
   const speakText = (text: string) => {
     if (!('speechSynthesis' in window)) return;
     window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
+    const phoneticText = getPhoneticSpeechText(text);
+    const utterance = new SpeechSynthesisUtterance(phoneticText);
     utterance.lang = language === 'Hindi' ? 'hi-IN' : 'en-US';
     utterance.rate = 1.0;
     utterance.pitch = 1.15;
@@ -789,10 +794,12 @@ function VoiceCallModal({ onClose, customerName }: { onClose: () => void; custom
       if (recognitionRef.current) recognitionRef.current.abort();
       setIsListening(false);
       setStatusText('Microphone Muted');
+      setIsMuted(true);
     } else {
-      startListening();
+      setIsMuted(false);
+      setStatusText('Listening for your voice...');
+      setTimeout(() => startListening(), 100);
     }
-    setIsMuted(!isMuted);
   };
 
   const handleLanguageToggle = () => {
@@ -885,16 +892,6 @@ function VoiceCallModal({ onClose, customerName }: { onClose: () => void; custom
             <Globe size={18} />
             {language}
           </button>
-
-          {!isSpeaking && !isListening && !isMuted && (
-            <button
-              type="button"
-              onClick={startListening}
-              className="flex h-12 items-center gap-2 rounded-2xl bg-[#65b7a9] px-4 text-xs font-bold text-[#1f2340]"
-            >
-              <Volume2 size={18} /> Speak Now
-            </button>
-          )}
 
           <button
             type="button"
