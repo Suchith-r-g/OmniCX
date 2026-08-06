@@ -29,17 +29,21 @@ export const requireCxUser: RequestHandler = async (req: Request, res: Response,
 
   try {
     await connectDB();
-    const clerkUser = await clerkClient.users.getUser(userId);
-    const email = clerkUser.primaryEmailAddress?.emailAddress;
-    if (!email) {
-      res.status(422).json({ error: "Your account needs a verified email address" });
-      return;
-    }
+    let email = `${userId}@omnicx.ai`;
+    let fullName = `Customer (${userId.slice(-6)})`;
 
-    const fullName =
-      [clerkUser.firstName, clerkUser.lastName].filter(Boolean).join(" ").trim() ||
-      clerkUser.username ||
-      email;
+    try {
+      const clerkUser = await clerkClient.users.getUser(userId);
+      if (clerkUser.primaryEmailAddress?.emailAddress) {
+        email = clerkUser.primaryEmailAddress.emailAddress;
+      }
+      fullName =
+        [clerkUser.firstName, clerkUser.lastName].filter(Boolean).join(" ").trim() ||
+        clerkUser.username ||
+        email;
+    } catch (clerkErr) {
+      req.log?.warn({ err: clerkErr }, "Clerk API lookup failed; using session claims fallback");
+    }
 
     const adminIds = idsFromEnv("CX_ADMIN_CLERK_USER_IDS");
     const agentIds = idsFromEnv("CX_AGENT_CLERK_USER_IDS");

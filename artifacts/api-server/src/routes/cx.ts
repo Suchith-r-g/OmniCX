@@ -212,7 +212,8 @@ router.post("/cx/tickets", ticketLimiter, async (req, res): Promise<void> => {
   await connectDB();
   const user = req.cxUser!;
   const ticketNum = generateCollisionSafeTicketNumber();
-  const validPriority = ["low", "medium", "high", "critical"].includes(parsed.data.priority ?? "") ? parsed.data.priority as any : "medium";
+  const priorityLower = (parsed.data.priority ?? "").toLowerCase();
+  const validPriority = ["low", "medium", "high", "critical"].includes(priorityLower) ? (priorityLower as any) : "medium";
 
   const ticket = await CxTicketModel.create({
     ticketNumber: ticketNum,
