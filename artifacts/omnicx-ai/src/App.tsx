@@ -52,7 +52,26 @@ import {
   useAssignCxTicket, useCreateCxFeedback, useCreateCxTicket, useCreateCxTicketMessage,
   useGetCxCopilot, useGetCxCustomer360, useGetCxDashboard, useGetCxInsights,
   useGetCxTicket, useListCxCustomers, useListCxTickets, useSendCxChat, useUpdateCxTicketStatus,
+  setAuthTokenGetter, setBaseUrl
 } from '@workspace/api-client-react';
+
+if (import.meta.env.VITE_API_BASE_URL) {
+  setBaseUrl(import.meta.env.VITE_API_BASE_URL);
+}
+
+function ClerkTokenSync() {
+  const { getToken } = useRealAuth();
+  useEffect(() => {
+    setAuthTokenGetter(async () => {
+      try {
+        return await getToken();
+      } catch {
+        return null;
+      }
+    });
+  }, [getToken]);
+  return null;
+}
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -1312,6 +1331,7 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <WouterRouter base={basePath}>
+          {hasRealClerkKey && <ClerkTokenSync />}
           <Router />
         </WouterRouter>
         <Toaster />
